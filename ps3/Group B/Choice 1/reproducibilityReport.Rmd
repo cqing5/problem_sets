@@ -69,7 +69,10 @@ Each row is an observation. The data is already in tidy format.
 ### Pre-processing
 
 ```{r}
-
+# O or 2 is non-predictive, M or 8 is switch predictive, T or 4 is repeat predictive; need to rename some of the values to make them consistent
+data$Prime[data$Prime == "2"] <- "O"
+data$Prime[data$Prime == "8"] <- "M"
+data$Prime[data$Prime == "4"] <- "T"
 ```
 
 ### Descriptive statistics
@@ -78,14 +81,19 @@ Each row is an observation. The data is already in tidy format.
 
 ```{r}
 # reproduce the above results here
-
+# 1 is repeat trial, 2 is switch trial
+data %>%
+  group_by(TrialType) %>%
+  summarise(median(RT))
 ```
 
 > Performance on switch trials, relative to repeat trials, incurred a switch cost that was evident in [...] lower accuracy rates (79% vs. 92%)
 
 ```{r mean_Correct_Response}
 # reproduce the above results here
-
+data %>%
+  group_by(TrialType) %>%
+  summarise(mean(RespCorr))
 ```
 
 Now you will analyze Predictive Switch Cues vs Non-predictive Switch Cues. Let's start with reaction time.
@@ -94,7 +102,9 @@ Now you will analyze Predictive Switch Cues vs Non-predictive Switch Cues. Let's
 
 ```{r mean Prime RT}
 # reproduce the above results here
-
+data %>%
+  group_by(Prime) %>%
+  summarise(mean(RT))
 ```
 
 Next you will try to reproduce error rates for Switch Predictive Cues vs Switch Non-predictive Cues.
@@ -103,7 +113,9 @@ Next you will try to reproduce error rates for Switch Predictive Cues vs Switch 
 
 ```{r Prime Accuracy}
 # reproduce the above results here
-
+data %>%
+  group_by(Prime) %>%
+  summarise(mean(RespCorr))
 ```
 
 ### Inferential statistics
@@ -114,7 +126,19 @@ The first claim is that in switch trials, predictive cues lead to statistically 
 
 ```{r Prime RT test}
 # reproduce the above results here
+# filter out Prime = T bc we only need O (non-predictive) and M (switch predictive) for this analysis
+filtered_data = data %>%
+  filter(Prime != "T")
 
+# change data from long to wide 
+filtered_data_wide = filtered_data %>%
+  pivot_wider(names_from = Prime, 
+              values_from = RT)
+
+# I ran into an issue with changing my data to wide form so I couldn't do a paired t-test due to issues with the number of subjects in each condition. This is how I would have done the paired t-test: t.test(RT ~ Prime, paired=TRUE, data=filtered_data_wide)
+
+# However I do still want to have some type of result to show so here's the non-paired t test:
+t.test(RT ~ Prime, data=filtered_data)
 ```
 
 Next, test the second claim.
@@ -124,18 +148,23 @@ Next, test the second claim.
 ```{r mean Prime accuracy test}
 # reproduce the above results here
 
+# Again, because I couldn't successfully change my data from long to wide, I couldn't do a paired t-test due. This is how I would have done the paired t-test: t.test(RespCorr ~ Prime, paired=TRUE, data=filtered_data_wide)
+
+# Again, here is the non-paired t-test because I want to at least have some result to show: 
+t.test(RespCorr ~ Prime, data=filtered_data)
+
 ```
 
 # Step 5: Reflection
 
 Were you able to reproduce the results you attempted to reproduce? If not, what part(s) were you unable to reproduce?
 
-> ANSWER HERE
+> I was mostly able to reproduce all of the descriptive statistics. However, there were some minor differences between my results and the original results. However, the reaction time means that I got for Predictive Switch Cues vs Non-predictive Switch Cues were very different in that my results showed that reaction time was shorter in the non-predictive switch condition than the predictive condition, which is the opposite of the original finding. Unfortunately, I wasn't able to reproduce the t-test results. Based on an error I ran into while trying to perform the t-test on the long data, I deduced that I had to convert the data from long to wide first. However, I had a lot of difficulty converting the data to wide, so I was not able to run a paired t-test. 
 
 How difficult was it to reproduce your results? 
 
-> ANSWER HERE
+> This one was pretty difficult because there was more data wrangling that needed to be done before I could perform the main tests. I struggled a lot with getting the data in the form that it needed to be in.
 
 What aspects made it difficult? What aspects made it easy?
 
-> ANSWER HERE
+> Something that made this difficult in particular was confusion about how things were labeled in the data. I did see later on that there was a codebook in the folder that ended up being helpful, but there were still some things that weren't explained (i.e., what 2, 4 and 8 meant in the Prime column). Something else that was confusing and made reproducability difficult was that there were only 2 trial types discussed in the paper, but there were 3 in the data (values 0, 1, or 2). The paper never mentioned a third trial or what the 0 represented, so this was confusing. The codebook did end up making understanding this assignment easier, but I didn't know there was a codebook until I had already spent a lot of time on this problem, so I think it could be made more clear/explicit in the future. 

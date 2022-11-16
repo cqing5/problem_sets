@@ -47,6 +47,7 @@ library(tidyverse) # for data munging
 library(knitr) # for kable table formating
 library(haven) # import and export 'SPSS', 'Stata' and 'SAS' Files
 library(readxl) # import excel files
+library(lsr)
 
 # #optional packages:
 # library(afex) #anova functions
@@ -86,7 +87,9 @@ d <- data %>%
 
 ```{r}
 # reproduce the above results here
-
+d %>%
+  group_by(Cond) %>%
+  summarise(Mean = mean(expense),CI = confint(lm(expense ~ 1), level = 0.95)) -> summary_d
 ```
 
 ## Inferential statistics
@@ -95,19 +98,21 @@ d <- data %>%
 
 ```{r}
 # reproduce the above results here
-
+two.way <- aov(expense ~ Slack*Large, data = d)
+summary(two.way)
+etaSquared(two.way)
 ```
 
 # Step 5: Reflection
 
 Were you able to reproduce the results you attempted to reproduce? If not, what part(s) were you unable to reproduce?
 
-> ANSWER HERE
+> I was able to reproduce the means for each condition, but my confidence intervals are a little bit off from the original. They were close, but maybe I need to try bootstrapping to get them to be more accurate. As for the ANOVA interaction, I was able to reproduce the same results. The eta squared value (.063) was a little different from the original (.07), but very close.  
 
 How difficult was it to reproduce your results? 
 
-> ANSWER HERE
+> It wasn't too difficult, especially since the data was easy to work with. However, I was confused at first because of the column names in the data, as I wasn't sure what Slack and Large meant. I was able to infer and use some process of elimination, but I think the data could have been labeled a bit more intuitively to help with interpretation.  
 
 What aspects made it difficult? What aspects made it easy?
 
-> ANSWER HERE
+> Again, one aspect that made it difficult was not fully understanding what the column names represented. An aspect that made reproducability easy was that the data wasn't particularly messy. I didn't have to do much data wrangling or cleaning before reproducing the results, which made the entire process fairly convenient In addition, the results were described very clearly and with detail in the original paper, which helped me understand how to run the ANOVA and what I was looking for. In general, the article itself served as a useful reference. 
